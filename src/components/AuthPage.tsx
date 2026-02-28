@@ -110,7 +110,8 @@ export default function AuthPage({ onClose }: AuthPageProps) {
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
-              className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-transparent focus:border-indigo-500 focus:outline-none transition-colors"
+              placeholder="you@example.com"
+              className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-transparent focus:border-indigo-500 focus:outline-none transition-colors placeholder:text-gray-400"
             />
           </div>
           <div>
@@ -126,7 +127,8 @@ export default function AuthPage({ onClose }: AuthPageProps) {
               autoComplete={
                 mode === "signup" ? "new-password" : "current-password"
               }
-              className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-transparent focus:border-indigo-500 focus:outline-none transition-colors"
+              placeholder={mode === "signup" ? "At least 6 characters" : "Enter your password"}
+              className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-transparent focus:border-indigo-500 focus:outline-none transition-colors placeholder:text-gray-400"
             />
           </div>
 
