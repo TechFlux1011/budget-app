@@ -5,15 +5,34 @@ import { FREQUENCY_LABELS } from "../types/budget";
 
 const FREQUENCIES: Frequency[] = ["weekly", "biweekly", "monthly"];
 
+const DAYS_OF_WEEK = [
+  { label: "Sun", value: 0 },
+  { label: "Mon", value: 1 },
+  { label: "Tue", value: 2 },
+  { label: "Wed", value: 3 },
+  { label: "Thu", value: 4 },
+  { label: "Fri", value: 5 },
+  { label: "Sat", value: 6 },
+] as const;
+
+function nextOccurrenceOfDay(dayIndex: number): string {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayDay = today.getDay();
+  const daysAhead = (dayIndex - todayDay + 7) % 7 || 7;
+  const target = new Date(today);
+  target.setDate(today.getDate() + daysAhead);
+  return target.toISOString().split("T")[0];
+}
+
 export default function SetupWizard() {
   const { dispatch } = useBudget();
   const [step, setStep] = useState(0);
   const [payFrequency, setPayFrequency] = useState<Frequency>("biweekly");
   const [nextPayDate, setNextPayDate] = useState("");
+  const [selectedPayDay, setSelectedPayDay] = useState<number | null>(null);
   const [incomeName, setIncomeName] = useState("Paycheck");
   const [incomeAmount, setIncomeAmount] = useState("");
-
-  const today = new Date().toISOString().split("T")[0];
 
   function handleFinish() {
     dispatch({
@@ -91,16 +110,27 @@ export default function SetupWizard() {
         {step === 1 && (
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium mb-2">
-                When is your next payday?
+              <label className="block text-sm font-medium mb-3">
+                What day of the week do you get paid?
               </label>
-              <input
-                type="date"
-                value={nextPayDate}
-                min={today}
-                onChange={(e) => setNextPayDate(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-transparent focus:border-indigo-500 focus:outline-none transition-colors"
-              />
+              <div className="grid grid-cols-7 gap-2">
+                {DAYS_OF_WEEK.map((day) => (
+                  <button
+                    key={day.value}
+                    onClick={() => {
+                      setSelectedPayDay(day.value);
+                      setNextPayDate(nextOccurrenceOfDay(day.value));
+                    }}
+                    className={`py-3 rounded-xl text-sm font-medium border-2 transition-all ${
+                      selectedPayDay === day.value
+                        ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300"
+                        : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                    }`}
+                  >
+                    {day.label}
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="flex gap-3">
               <button
@@ -111,7 +141,7 @@ export default function SetupWizard() {
               </button>
               <button
                 onClick={() => setStep(2)}
-                disabled={!nextPayDate}
+                disabled={selectedPayDay === null}
                 className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-colors"
               >
                 Continue
