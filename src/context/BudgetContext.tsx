@@ -193,14 +193,18 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
     prevUidRef.current = uid;
 
     if (uid) {
-      // Logged-in: migrate any local data, then load from Firestore
       (async () => {
-        await migrateLocalToFirestore(uid);
-        const cloud = await loadBudgetFromFirestore(uid);
-        if (cloud) {
-          dispatch({ type: "LOAD_BUDGET", payload: cloud });
-          dispatch({ type: "SET_VIEW_SCALE", payload: cloud.payFrequency });
-        } else {
+        try {
+          await migrateLocalToFirestore(uid);
+          const cloud = await loadBudgetFromFirestore(uid);
+          if (cloud) {
+            dispatch({ type: "LOAD_BUDGET", payload: cloud });
+            dispatch({ type: "SET_VIEW_SCALE", payload: cloud.payFrequency });
+          } else {
+            dispatch({ type: "RESET" });
+          }
+        } catch (err) {
+          console.error("Failed to load budget from Firestore:", err);
           dispatch({ type: "RESET" });
         }
         dispatch({ type: "HYDRATED" });
