@@ -193,10 +193,13 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
     prevUidRef.current = uid;
 
     if (uid) {
+      const timeout = <T,>(p: Promise<T>, ms: number): Promise<T> =>
+        Promise.race([p, new Promise<never>((_, rej) => setTimeout(() => rej(new Error("Timeout")), ms))]);
+
       (async () => {
         try {
-          await migrateLocalToFirestore(uid);
-          const cloud = await loadBudgetFromFirestore(uid);
+          await timeout(migrateLocalToFirestore(uid), 5000);
+          const cloud = await timeout(loadBudgetFromFirestore(uid), 5000);
           if (cloud) {
             dispatch({ type: "LOAD_BUDGET", payload: cloud });
             dispatch({ type: "SET_VIEW_SCALE", payload: cloud.payFrequency });
